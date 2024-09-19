@@ -1,19 +1,19 @@
-# main.py
-
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel
 from dice_system import resolve_action
-from typing import List
+from typing import List, Optional
+import os
 
 app = FastAPI()
 
-# 定義請求體的數據模型
+# 從環境變量中讀取 API 金鑰
+API_KEY = os.getenv("API_KEY")
+
 class ActionRequest(BaseModel):
     luck: int
     difficulty_modifiers: List[int]
     situational_modifiers: List[int]
 
-# 定義回應體的數據模型
 class ActionResponse(BaseModel):
     base_roll: int
     final_roll: int
@@ -22,7 +22,11 @@ class ActionResponse(BaseModel):
     modifiers_breakdown: str
 
 @app.post("/resolve_action", response_model=ActionResponse)
-def api_resolve_action(request: ActionRequest):
+def api_resolve_action(request: ActionRequest, api_key: Optional[str] = Header(None)):
+    # 驗證 API 金鑰
+    if api_key != API_KEY:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    
     # 基本驗證
     if not (0 <= request.luck <= 100):
         raise HTTPException(status_code=400, detail="Luck must be between 0 and 100.")
