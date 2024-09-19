@@ -1,15 +1,12 @@
 # main.py
 
-from fastapi import FastAPI, HTTPException, Header
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 import os
 from dice_system import resolve_action
 
 app = FastAPI()
-
-# 从环境变量中读取 API_KEY
-API_KEY = os.getenv("API_KEY")
 
 class ActionRequest(BaseModel):
     luck: int
@@ -24,11 +21,7 @@ class ActionResponse(BaseModel):
     modifiers_breakdown: str
 
 @app.post("/resolve_action", response_model=ActionResponse)
-def api_resolve_action(request: ActionRequest, api_key: Optional[str] = Header(None)):
-    # 验证 API_KEY
-    if API_KEY and api_key != API_KEY:
-        raise HTTPException(status_code=403, detail="Forbidden")
-    
+def api_resolve_action(request: ActionRequest):
     # 验证 luck 值在 0 到 100 之间
     if not (0 <= request.luck <= 100):
         raise HTTPException(status_code=400, detail="Luck must be between 0 and 100.")
