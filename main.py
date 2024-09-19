@@ -1,12 +1,14 @@
+# main.py
+
 from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel
-from dice_system import resolve_action
 from typing import List, Optional
 import os
+from dice_system import resolve_action
 
 app = FastAPI()
 
-# 從環境變量中讀取 API 金鑰
+# 从环境变量中读取 API_KEY
 API_KEY = os.getenv("API_KEY")
 
 class ActionRequest(BaseModel):
@@ -23,22 +25,22 @@ class ActionResponse(BaseModel):
 
 @app.post("/resolve_action", response_model=ActionResponse)
 def api_resolve_action(request: ActionRequest, api_key: Optional[str] = Header(None)):
-    # 驗證 API 金鑰
-    if api_key != API_KEY:
+    # 验证 API_KEY
+    if API_KEY and api_key != API_KEY:
         raise HTTPException(status_code=403, detail="Forbidden")
     
-    # 基本驗證
+    # 验证 luck 值在 0 到 100 之间
     if not (0 <= request.luck <= 100):
         raise HTTPException(status_code=400, detail="Luck must be between 0 and 100.")
 
-    # 調用 resolve_action 函數
+    # 调用 resolve_action 函数
     result = resolve_action(
         luck=request.luck,
         difficulty_modifiers=request.difficulty_modifiers,
         situational_modifiers=request.situational_modifiers
     )
 
-    # 解析結果
+    # 解析结果
     lines = result.split('\n')
     if len(lines) < 5:
         raise HTTPException(status_code=500, detail="Invalid response format from dice_system.")
@@ -49,7 +51,7 @@ def api_resolve_action(request: ActionRequest, api_key: Optional[str] = Header(N
     description_line = lines[3]
     modifiers_breakdown = '\n'.join(lines[4:])
 
-    # 提取數值
+    # 提取数值
     try:
         base_roll = int(base_roll_line.split(': ')[1])
         final_roll = int(final_roll_line.split(': ')[1])
