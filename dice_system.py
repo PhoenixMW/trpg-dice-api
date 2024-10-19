@@ -19,34 +19,37 @@ def calculate_modifiers(luck, difficulty_modifiers, situational_modifiers):
 
 # Determine the outcome based on base and final roll
 def get_outcome(base_roll, final_roll):
+    # 極端成功或極端失敗判斷，這些結果應有行動以外的額外影響
     if base_roll >= 96:
-        return "Critical Success!", "You have successfully completed the action with unexpected benefits."
+        return "Extreme Success!", "You have successfully completed the action with exceptional results, and unexpected benefits."
     elif base_roll <= 5:
-        return "Critical Failure!", "The action failed and led to severe consequences."
-    elif final_roll >= 80:
-        return "Great Success", "The action was very successful with extra benefits."
+        return "Fumble!", "The action failed catastrophically, leading to severe unintended consequences."
+
+    # 根據最終擲骰的結果進行行動的判斷
+    if final_roll >= 80:
+        return "Hard Success", "The action succeeded beyond expectations, achieving the intended result with notable effectiveness."
     elif final_roll >= 50:
-        return "Success", "The action succeeded with some benefits."
+        return "Regular Success", "The action succeeded, accomplishing exactly what you intended without additional effects."
     elif final_roll <= 20:
-        return "Great Failure", "The action failed with major negative consequences."
+        return "Hard Failure", "The action failed significantly, leading to some negative impact on the attempt."
     else:
-        return "Failure", "The action failed with minor negative consequences."
+        return "Regular Failure", "The action did not succeed, and nothing else happens."
 
 # Resolve the action using luck, difficulty modifiers, and situational modifiers
 def resolve_action(luck, difficulty_modifiers, situational_modifiers):
     base_roll = roll_dice()
 
-    # 初始化修正值變數，避免未定義錯誤
+    # Initialize modifiers to avoid undefined errors
     luck_modifier = 0
     total_difficulty_modifier = 0
     total_situational_modifier = 0
     total_modifier = 0
 
-    # 判斷是否為極限成功或失敗
+    # Check for critical success or failure
     if base_roll >= 96 or base_roll <= 5:
         final_roll = base_roll
     else:
-        # 計算修正值
+        # Calculate modifiers
         luck_modifier, total_difficulty_modifier, total_situational_modifier = calculate_modifiers(
             luck, difficulty_modifiers, situational_modifiers
         )
@@ -54,10 +57,10 @@ def resolve_action(luck, difficulty_modifiers, situational_modifiers):
         final_roll = base_roll + total_modifier
         final_roll = max(1, min(100, final_roll))
 
-    # 獲取結果
+    # Get outcome and description
     outcome, description = get_outcome(base_roll, final_roll)
 
-    # 返回所有細節，包括修正值
+    # Return all details, including modifiers
     result = (
         f"Base roll: {base_roll}\n"
         f"Final roll: {final_roll}\n"
